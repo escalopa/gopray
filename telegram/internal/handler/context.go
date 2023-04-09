@@ -13,7 +13,7 @@ type userContext struct {
 
 // contextWrapper is a wrapper for user commands to create a new context for each user
 // and cancel the previous context if exists
-func (h *Handler) contextWrapper(command func(u *objs.Update)) func(update *objs.Update) {
+func (h *Handler) contextWrapper(command func(*objs.Update)) func(*objs.Update) {
 	return func(update *objs.Update) {
 		// Create new context for user
 		newCtx, cancel := context.WithCancel(h.c)

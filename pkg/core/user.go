@@ -1,10 +1,14 @@
 package core
 
 type User struct {
-	ID int `json:"id"` // Telegram user ID
+	TelegramID int64
+	IsAdmin    bool
 }
 
 type CreateUserParams struct {
-	ID   int    `json:"id"`   // Telegram user ID
-	Lang string `json:"lang"` // Language code
+	TelegramID int
+	FirstName  string
+	LastName   string
+	Username   string
+	LangCode   string
 }

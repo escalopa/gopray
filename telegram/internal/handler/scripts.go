@@ -18,19 +18,18 @@ func (h *Handler) scriptWrapper(command func(u *objs.Update)) func(u *objs.Updat
 		}
 		command(u)
 	}
-
 }
 
 func (h *Handler) setScript(chatID int) error {
 	sc, ok := h.userScript[chatID]
 	if !ok || sc == nil {
-		lang, err := h.u.GetLang(h.c, chatID)
+		lang, err := h.u.GetLang(h.userCtx[chatID].ctx, chatID)
 		if err != nil {
 			log.Printf("failed to get lang on scriptWrapper: %v", err)
 			lang = language.DefaultLang().Short
 		}
 		// Load user script
-		script, err := h.u.GetScript(h.c, lang)
+		script, err := h.u.GetScript(h.userCtx[chatID].ctx, lang)
 		if err != nil {
 			log.Printf("failed to get script on scriptWrapper: %v", err)
 			return err

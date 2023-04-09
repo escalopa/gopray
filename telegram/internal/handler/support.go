@@ -8,35 +8,37 @@ import (
 	"strings"
 	"time"
 
-	"github.com/escalopa/gopray/pkg/core"
-	"github.com/escalopa/gopray/pkg/language"
-
 	objs "github.com/SakoDroid/telego/objects"
 )
 
 func (h *Handler) Start(u *objs.Update) {
-	chatID := u.Message.Chat.Id
-	if _, err := h.u.GetUser(h.c, chatID); err != nil {
-		// Check that the user language is valid & supported.
-		userLang := u.Message.From.LanguageCode
-		if !language.IsValidLang(userLang) {
-			userLang = language.DefaultLang().Short
-		}
-		// Set the user language in the database.
-		go func() {
-			err = h.u.StoreUser(h.c, core.CreateUserParams{ID: chatID, Lang: userLang})
-			if err != nil {
-				log.Printf("failed to store user %d %s in the database: %v", chatID, userLang, err)
-			}
-		}()
-		// Get & set the user script.
-		script, err := h.u.GetScript(h.userCtx[chatID].ctx, userLang)
-		if err != nil {
-			log.Printf("failed to get script for %s: %v", userLang, err)
-			return
-		}
-		h.userScript[chatID] = script
-	}
+
+	/////////////////////////////////////////
+	// Logic moved to user wrapper function
+	/////////////////////////////////////////
+
+	// chatID := u.Message.Chat.Id
+	// if _, err := h.u.GetUser(h.c, chatID); err != nil {
+	// 	// Check that the user language is valid & supported.
+	// 	userLang := u.Message.From.LanguageCode
+	// 	if !language.IsValidLang(userLang) {
+	// 		userLang = language.DefaultLang().Short
+	// 	}
+	// 	// Set the user language in the database.
+	// 	go func() {
+	// 		err = h.u.StoreUser(h.c, core.CreateUserParams{TelegramID: chatID, LangCode: userLang})
+	// 		if err != nil {
+	// 			log.Printf("failed to store user %d %s in the database: %v", chatID, userLang, err)
+	// 		}
+	// 	}()
+	// 	// Get & set the user script.
+	// 	script, err := h.u.GetScript(h.userCtx[chatID].ctx, userLang)
+	// 	if err != nil {
+	// 		log.Printf("failed to get script for %s: %v", userLang, err)
+	// 		return
+	// 	}
+	// 	h.userScript[chatID] = script
+	// }
 	h.Help(u)
 }
 

@@ -7,6 +7,7 @@ import (
 	"github.com/escalopa/gopray/pkg/language"
 
 	"github.com/SakoDroid/telego"
+	objs "github.com/SakoDroid/telego/objects"
 
 	"github.com/escalopa/gopray/telegram/internal/application"
 )
@@ -46,39 +47,39 @@ func (h *Handler) Run() error {
 
 func (h *Handler) register() error {
 	var err error
-	err = h.b.AddHandler("/start", h.contextWrapper(h.scriptWrapper(h.Start)), "all")
+	err = h.b.AddHandler("/start", h.defaultWrapper(h.Start), "all")
 	if err != nil {
 		return err
 	}
-	err = h.b.AddHandler("/help", h.contextWrapper(h.scriptWrapper(h.Help)), "all")
+	err = h.b.AddHandler("/help", h.defaultWrapper(h.Help), "all")
 	if err != nil {
 		return err
 	}
-	err = h.b.AddHandler("/subscribe", h.contextWrapper(h.scriptWrapper(h.Subscribe)), "all")
+	err = h.b.AddHandler("/subscribe", h.defaultWrapper(h.Subscribe), "all")
 	if err != nil {
 		return err
 	}
-	err = h.b.AddHandler("/unsubscribe", h.contextWrapper(h.scriptWrapper(h.Unsubscribe)), "all")
+	err = h.b.AddHandler("/unsubscribe", h.defaultWrapper(h.Unsubscribe), "all")
 	if err != nil {
 		return err
 	}
-	err = h.b.AddHandler("/today", h.contextWrapper(h.scriptWrapper(h.GetPrayers)), "all")
+	err = h.b.AddHandler("/today", h.defaultWrapper(h.GetPrayers), "all")
 	if err != nil {
 		return err
 	}
-	err = h.b.AddHandler("/date", h.contextWrapper(h.scriptWrapper(h.GetPrayersByDate)), "all")
+	err = h.b.AddHandler("/date", h.defaultWrapper(h.GetPrayersByDate), "all")
 	if err != nil {
 		return err
 	}
-	err = h.b.AddHandler("/lang", h.contextWrapper(h.scriptWrapper(h.SetLang)), "all")
+	err = h.b.AddHandler("/lang", h.defaultWrapper(h.SetLang), "all")
 	if err != nil {
 		return err
 	}
-	err = h.b.AddHandler("/feedback", h.contextWrapper(h.scriptWrapper(h.Feedback)), "all")
+	err = h.b.AddHandler("/feedback", h.defaultWrapper(h.Feedback), "all")
 	if err != nil {
 		return err
 	}
-	err = h.b.AddHandler("/bug", h.contextWrapper(h.scriptWrapper(h.Bug)), "all")
+	err = h.b.AddHandler("/bug", h.defaultWrapper(h.Bug), "all")
 	if err != nil {
 		return err
 	}
@@ -87,15 +88,15 @@ func (h *Handler) register() error {
 	///// Admin Commands /////
 	//////////////////////////
 
-	err = h.b.AddHandler("/respond", h.contextWrapper(h.scriptWrapper(h.admin(h.Respond))), "all")
+	err = h.b.AddHandler("/respond", h.defaultWrapper(h.Respond, h.admin), "all")
 	if err != nil {
 		return err
 	}
-	err = h.b.AddHandler("/subs", h.contextWrapper(h.scriptWrapper(h.admin(h.GetSubscribers))), "all")
+	err = h.b.AddHandler("/subs", h.defaultWrapper(h.GetSubscribers, h.admin), "all")
 	if err != nil {
 		return err
 	}
-	err = h.b.AddHandler("/sall", h.contextWrapper(h.scriptWrapper(h.admin(h.SendAll))), "all")
+	err = h.b.AddHandler("/sall", h.defaultWrapper(h.SendAll, h.admin), "all")
 	if err != nil {
 		return err
 	}
@@ -131,4 +132,25 @@ func (h *Handler) deleteMessage(chatID, messageID int) {
 		log.Printf("failed to delete message: %s", err)
 		return
 	}
+}
+
+type wrapperFunc func(func(*objs.Update)) func(*objs.Update)
+
+func (h *Handler) defaultWrapper(command func(u *objs.Update), extra ...wrapperFunc) func(u *objs.Update) {
+	wrappers := []wrapperFunc{
+		h.contextWrapper,
+		h.userWrapper,
+		h.scriptWrapper,
+	}
+	wrappers = append(wrappers, extra...)
+
+	// Wrap the command with the wrappers.
+	finalWrapper := func(u *objs.Update) {
+		command(u)
+	}
+	for i := len(wrappers) - 1; i >= 0; i-- {
+		prevWrapper := finalWrapper
+		finalWrapper = wrappers[i](func(uu *objs.Update) { prevWrapper(uu) })
+	}
+	return finalWrapper
 }
