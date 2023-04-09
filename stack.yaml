@@ -12,7 +12,10 @@ services:
       - BOT_TOKEN_FILE=/run/secrets/gopray_bot_token
       - BOT_OWNER_ID=1385434843
 
+      # - DB_URL=/run/secrets/gopray_db_url
       - CACHE_URL_FILE=/run/secrets/gopray_cache_url
+      - STORAGE_TYPE=redis
+
       - DATA_PATH=/go/src/github.com/escalopa/gopray/times.csv
       - LANGUAGES_PATH=/go/src/github.com/escalopa/gopray/languages
 
@@ -27,3 +30,5 @@ secrets:
     external: true
   gopray_cache_url:
     external: true
+  # gopray_db_url:
+  #   external: true
