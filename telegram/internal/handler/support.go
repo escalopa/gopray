@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/escalopa/gopray/pkg/core"
 	"github.com/escalopa/gopray/pkg/language"
 
 	objs "github.com/SakoDroid/telego/objects"
@@ -15,7 +16,7 @@ import (
 
 func (h *Handler) Start(u *objs.Update) {
 	chatID := u.Message.Chat.Id
-	if _, err := h.u.GetLang(h.c, chatID); err != nil {
+	if _, err := h.u.GetUser(h.c, chatID); err != nil {
 		// Check that the user language is valid & supported.
 		userLang := u.Message.From.LanguageCode
 		if !language.IsValidLang(userLang) {
@@ -23,15 +24,16 @@ func (h *Handler) Start(u *objs.Update) {
 		}
 		// Set the user language in the database.
 		go func() {
-			err = h.u.SetLang(h.userCtx[chatID].ctx, chatID, userLang)
+			err = h.u.StoreUser(h.c, core.CreateUserParams{ID: chatID, Lang: userLang})
 			if err != nil {
-				log.Printf("failed to set user language on /start: %s", err)
+				log.Printf("failed to store user %d %s in the database: %v", chatID, userLang, err)
 			}
 		}()
 		// Get & set the user script.
 		script, err := h.u.GetScript(h.userCtx[chatID].ctx, userLang)
 		if err != nil {
 			log.Printf("failed to get script for %s: %v", userLang, err)
+			return
 		}
 		h.userScript[chatID] = script
 	}

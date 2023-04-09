@@ -7,20 +7,25 @@ import (
 	"github.com/escalopa/gopray/pkg/language"
 )
 
+type UserRepository interface {
+	StoreUser(ctx context.Context, params core.CreateUserParams) error
+	GetUser(ctx context.Context, id int) (core.User, error)
+}
+
 type PrayerRepository interface {
 	StorePrayer(ctx context.Context, times core.PrayerTimes) error
 	GetPrayer(ctx context.Context, day, month int) (core.PrayerTimes, error)
 }
 
 type SubscriberRepository interface {
-	StoreSubscriber(ctx context.Context, id int) error
-	RemoveSubscribe(ctx context.Context, id int) error
+	StoreSubscriber(ctx context.Context, userID int) error
+	RemoveSubscribe(ctx context.Context, userID int) error
 	GetSubscribers(ctx context.Context) ([]int, error)
 }
 
 type LanguageRepository interface {
-	GetLang(ctx context.Context, id int) (string, error)
-	SetLang(ctx context.Context, id int, lang string) error
+	GetLang(ctx context.Context, userID int) (string, error)
+	SetLang(ctx context.Context, userID int, lang string) error
 }
 
 type HistoryRepository interface {

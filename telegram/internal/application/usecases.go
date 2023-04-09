@@ -11,6 +11,7 @@ import (
 
 type UseCase struct {
 	n   Notifier
+	ur  UserRepository
 	sr  SubscriberRepository
 	pr  PrayerRepository
 	lr  LanguageRepository
@@ -37,6 +38,12 @@ func WithNotifier(n Notifier) func(*UseCase) {
 func WithTimeLocation(loc *time.Location) func(*UseCase) {
 	return func(uc *UseCase) {
 		uc.loc = loc
+	}
+}
+
+func WithUserRepository(ur UserRepository) func(*UseCase) {
+	return func(uc *UseCase) {
+		uc.ur = ur
 	}
 }
 
@@ -111,6 +118,16 @@ func (uc *UseCase) Notify(
 				}
 			})
 	}()
+}
+
+func (uc *UseCase) GetUser(ctx context.Context, id int) (core.User, error) {
+	user, err := uc.ur.GetUser(ctx, id)
+	return user, err
+}
+
+func (uc *UseCase) StoreUser(ctx context.Context, params core.CreateUserParams) error {
+	err := uc.ur.StoreUser(ctx, params)
+	return err
 }
 
 func (uc *UseCase) Subscribe(ctx context.Context, id int) error {
