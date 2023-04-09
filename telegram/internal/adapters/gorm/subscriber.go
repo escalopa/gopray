@@ -16,7 +16,7 @@ func NewSubscriberRepository(db *gorm.DB) *SubscriberRepository {
 }
 
 func (r *SubscriberRepository) StoreSubscriber(ctx context.Context, id int) error {
-	u := User{TelegramID: int64(id)}
+	var u User
 	// Set user as subscribed
 	err := r.db.WithContext(ctx).Model(&u).
 		Where("telegram_id = ?", id).
@@ -28,7 +28,7 @@ func (r *SubscriberRepository) StoreSubscriber(ctx context.Context, id int) erro
 }
 
 func (r *SubscriberRepository) RemoveSubscribe(ctx context.Context, id int) error {
-	u := User{TelegramID: int64(id)}
+	var u User
 	// Set user as unsubscribed
 	err := r.db.WithContext(ctx).Model(&u).
 		Where("telegram_id = ?", id).

@@ -17,7 +17,7 @@ func NewHistoryRepository(db *gorm.DB) *HistoryRepository {
 
 func (r *HistoryRepository) GetPrayerMessageID(ctx context.Context, userID int) (int, error) {
 	var u User
-	err := r.db.WithContext(ctx).Where("telegram_id = ?", u.TelegramID).First(&u).Error
+	err := r.db.WithContext(ctx).Where("telegram_id = ?", userID).First(&u).Error
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to get last message id")
 	}
@@ -25,10 +25,10 @@ func (r *HistoryRepository) GetPrayerMessageID(ctx context.Context, userID int) 
 }
 
 func (r *HistoryRepository) StorePrayerMessageID(ctx context.Context, userID int, messageID int) error {
-	u := User{TelegramID: int64(userID), LastMessageID: int64(messageID)}
+	var u User
 	err := r.db.WithContext(ctx).Model(&u).
-		Where("telegram_id = ?", u.TelegramID).
-		Update("last_message_id", u.LastMessageID).Error
+		Where("telegram_id = ?", userID).
+		Update("last_message_id", messageID).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to upate last message id")
 	}
